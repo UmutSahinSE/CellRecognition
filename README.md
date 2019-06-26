@@ -11,3 +11,7 @@ A python script which is used for segmenting cells from provided images. Script 
 1. Connecting further edges
 1. Filling newly formed contours
 1. Merging previous results with current
+
+## Necessary Improvements
+1. Algorithm must be optimized to run faster.
+1. Algorithm must be improved in order to detect cells from wider range of images.
