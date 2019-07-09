@@ -536,44 +536,44 @@ for i in range(1,15):
     unedited_image = cv2.imread(original_image, cv2.IMREAD_GRAYSCALE)
 
     min_size = 4000
-    # back = unedited_image.copy()
-    # # image = cv2.GaussianBlur(image,(3,3),0)
-    # back = cv2.bilateralFilter(back, 9, 150, 150)
-    # back = detect_background(back, i, 3,5)
-    #
-    # back = cv2.resize(back, (int(unedited_image.shape[1] / 2), int(unedited_image.shape[0] / 2)))
-    # cv2.imwrite('results/resize' + str(i) + '.tif', back)
-    #
-    # # canny = unedited_image.copy()
-    # # canny = cv2.bilateralFilter(canny, 9, 150, 150)
-    # # canny = cv2.Canny(canny, 0, 10)
-    # # cv2.imwrite('canny' + str(i) + '.tif', canny)
-    #
-    # # for m in range(0, unedited_image.shape[0]):
-    # #     for n in range(0, unedited_image.shape[1]):
-    # #         if back[m][n] == 0 or canny[m][n] == 0:
-    # #             unedited_image[m][n] = 0
-    # #         else:
-    # #             unedited_image[m][n] = 255
-    #
-    # # cv2.imwrite('edgemerge' + str(i) + '.tif', unedited_image)
-    #
-    # connect_close_edges('results/resize' + str(i) + '.tif', 30,
-    #                     i)  # connect points with other points that are in 12*12 window in positive axis
-    #
-    #
-    # fill_holes('results/connected' + str(i) + '.tif', "1",
-    #            i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
-    # # are not cells and should be removed
+    back = unedited_image.copy()
+    # image = cv2.GaussianBlur(image,(3,3),0)
+    back = cv2.bilateralFilter(back, 9, 150, 150)
+    back = detect_background(back, i, 3,5)
 
-    # eliminate_small_objects('results/filled' + str(i) + '_1.tif', min_size,
-    #                         i)  # connecting close edges creates contours. Small contours means they
-    # #
-    # connect_close_edges('results/big_only' + str(i) + '.tif', 30,
-    #                     i)  # connect points with other points that are in 12*12 window in positive axis
-    # fill_holes('results/connected' + str(i) + '.tif', "result",
-    #            i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
-    # # are not cells and should be removed
+    back = cv2.resize(back, (int(unedited_image.shape[1] / 2), int(unedited_image.shape[0] / 2)))
+    cv2.imwrite('results/resize' + str(i) + '.tif', back)
+
+    # canny = unedited_image.copy()
+    # canny = cv2.bilateralFilter(canny, 9, 150, 150)
+    # canny = cv2.Canny(canny, 0, 10)
+    # cv2.imwrite('canny' + str(i) + '.tif', canny)
+
+    # for m in range(0, unedited_image.shape[0]):
+    #     for n in range(0, unedited_image.shape[1]):
+    #         if back[m][n] == 0 or canny[m][n] == 0:
+    #             unedited_image[m][n] = 0
+    #         else:
+    #             unedited_image[m][n] = 255
+
+    # cv2.imwrite('edgemerge' + str(i) + '.tif', unedited_image)
+
+    connect_close_edges('results/resize' + str(i) + '.tif', 30,
+                        i)  # connect points with other points that are in 12*12 window in positive axis
+
+
+    fill_holes('results/connected' + str(i) + '.tif', "1",
+               i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
+    # are not cells and should be removed
+
+    eliminate_small_objects('results/filled' + str(i) + '_1.tif', min_size,
+                            i)  # connecting close edges creates contours. Small contours means they
+    #
+    connect_close_edges('results/big_only' + str(i) + '.tif', 30,
+                        i)  # connect points with other points that are in 12*12 window in positive axis
+    fill_holes('results/connected' + str(i) + '.tif', "result",
+               i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
+    # are not cells and should be removed
 
     small_result = cv2.imread('results/filled' + str(i) + '_result.tif', cv2.IMREAD_GRAYSCALE)
     result = cv2.resize(small_result, (int(unedited_image.shape[1]), int(unedited_image.shape[0])))
