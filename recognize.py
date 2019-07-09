@@ -257,7 +257,7 @@ def connect_close_edges(path,window_size,index):
     #                 for p in points:
     #                     image[p[0],p[1]]=255
 
-    cv2.imwrite('connected'+str(index)+'.tif', image)
+    cv2.imwrite('results/connected'+str(index)+'.tif', image)
 
 def find_points_to_fill(i,j,closest_white):  # Bresenham's_Line_Algorithm http://www.roguebasin.com/index.php?title=Bresenham%27s_Line_Algorithm
     x1 = i
@@ -327,10 +327,11 @@ def eliminate_small_objects(path, min_size, index):
             if a[i][j] == False:
                 image[i][j] = 0  # formatting boolean representation back to intensity representation
 
-    cv2.imwrite('big_only' + str(index) + '.tif', image)
+    cv2.imwrite('results/big_only' + str(index) + '.tif', image)
 
 def fill_holes(path, nth, index):
     image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+    image[0] = [0]*len(image[0])
     im_floodfill = image.copy()
     h, w = image.shape[:2]
     mask = np.zeros((h + 2, w + 2), np.uint8)
@@ -345,7 +346,7 @@ def fill_holes(path, nth, index):
     im_out = image | im_floodfill_inv
 
     # Display images.
-    cv2.imwrite('filled' + str(index) + '_'+nth+'.tif', im_out)
+    cv2.imwrite('results/filled' + str(index) + '_'+nth+'.tif', im_out)
 
 def eliminate_convex_contours(path, convex_path, persantage_threshold):
     # before comparing original contours with convex_hulled ones, contours must be matched. As a result of
@@ -489,21 +490,16 @@ def test_stationary(current_image_path,points):
     #
     #         plt.savefig("aaa.tif", bbox_inches='tight', pad_inches=0)
 
-def detect_background(current_image,index):
+def detect_background(current_image,index,threshold,window_size):
     # background_template = cv2.imread("background_template.tif", cv2.IMREAD_GRAYSCALE)
     # points = []
     # print(background_template[0,0])
-    threshold = 5
-    if index < 10:
-        threshold = 3
-    else:
-        threshold = 3
-    for i in range(0, int((current_image.shape[0])/10)):
-        for j in range(0, int((current_image.shape[1])/10)):
-            if j == int((current_image.shape[1])/10)-1:
-                template = current_image[i * 10:i * 10 + 10, j * 10:]
+    for i in range(0, int((current_image.shape[0])/window_size)):
+        for j in range(0, int((current_image.shape[1])/window_size)):
+            if j == int((current_image.shape[1])/window_size)-1:
+                template = current_image[i * window_size:i * window_size + window_size, j * window_size:]
             else:
-                template = current_image[i*10:i*10+10, j*10:j*10+10]
+                template = current_image[i*window_size:i*window_size+window_size, j*window_size:j*window_size+window_size]
             mins = []
             maxes = []
             for m in range(len(template)):
@@ -512,12 +508,16 @@ def detect_background(current_image,index):
             if max(maxes) - min(mins) < threshold:
                 for m in range(len(template)):
                     template[m] = [0] * len(template[m])
+            else:
+                for m in range(len(template)):
+                    template[m] = [255] * len(template[m])
 
-    template = current_image[i*10:]
+
+    template = current_image[i*window_size:]
     for m in range(len(template)):
         template[m] = [0] * len(template[m])
 
-    cv2.imwrite('back'+str(index)+'.tif', current_image)
+    cv2.imwrite('results/back'+str(index)+'.tif', current_image)
     return current_image
 
 
@@ -526,7 +526,7 @@ def detect_background(current_image,index):
 ########## start of execution ##############
 # points = detect_stationary('glassmatrigel/01/frame28.tif','glassmatrigel/01/frame493.tif')
 
-for i in range(14,15):
+for i in range(1,15):
     file_init = 'glassmatrigel/01rename/frame'       # 'training/train0'
     extra_0 = ""  # to adapt naming convention
     # if i<10:
@@ -535,98 +535,53 @@ for i in range(14,15):
     # test_stationary(original_image,points)
     unedited_image = cv2.imread(original_image, cv2.IMREAD_GRAYSCALE)
 
-    if i >= 8:
-        back = unedited_image.copy()
-        # image = cv2.GaussianBlur(image,(3,3),0)
-        back = cv2.bilateralFilter(back, 9, 150, 150)
-        back = detect_background(back,i)
+    min_size = 4000
+    # back = unedited_image.copy()
+    # # image = cv2.GaussianBlur(image,(3,3),0)
+    # back = cv2.bilateralFilter(back, 9, 150, 150)
+    # back = detect_background(back, i, 3,5)
+    #
+    # back = cv2.resize(back, (int(unedited_image.shape[1] / 2), int(unedited_image.shape[0] / 2)))
+    # cv2.imwrite('results/resize' + str(i) + '.tif', back)
+    #
+    # # canny = unedited_image.copy()
+    # # canny = cv2.bilateralFilter(canny, 9, 150, 150)
+    # # canny = cv2.Canny(canny, 0, 10)
+    # # cv2.imwrite('canny' + str(i) + '.tif', canny)
+    #
+    # # for m in range(0, unedited_image.shape[0]):
+    # #     for n in range(0, unedited_image.shape[1]):
+    # #         if back[m][n] == 0 or canny[m][n] == 0:
+    # #             unedited_image[m][n] = 0
+    # #         else:
+    # #             unedited_image[m][n] = 255
+    #
+    # # cv2.imwrite('edgemerge' + str(i) + '.tif', unedited_image)
+    #
+    # connect_close_edges('results/resize' + str(i) + '.tif', 30,
+    #                     i)  # connect points with other points that are in 12*12 window in positive axis
+    #
+    #
+    # fill_holes('results/connected' + str(i) + '.tif', "1",
+    #            i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
+    # # are not cells and should be removed
 
-        canny = unedited_image.copy()
-        canny = cv2.bilateralFilter(canny, 9, 150, 150)
-        canny = cv2.Canny(canny, 0, 5)
-        cv2.imwrite('canny' + str(i) + '.tif', canny)
+    # eliminate_small_objects('results/filled' + str(i) + '_1.tif', min_size,
+    #                         i)  # connecting close edges creates contours. Small contours means they
+    # #
+    # connect_close_edges('results/big_only' + str(i) + '.tif', 30,
+    #                     i)  # connect points with other points that are in 12*12 window in positive axis
+    # fill_holes('results/connected' + str(i) + '.tif', "result",
+    #            i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
+    # # are not cells and should be removed
 
-        for m in range(unedited_image.shape[0]):
-            for n in range(unedited_image.shape[1]):
-                if back[m,n] == 0 or canny[m,n] == 0:
-                    unedited_image[m,n] = 0
-                else:
-                    unedited_image[m,n] = 255
+    small_result = cv2.imread('results/filled' + str(i) + '_result.tif', cv2.IMREAD_GRAYSCALE)
+    result = cv2.resize(small_result, (int(unedited_image.shape[1]), int(unedited_image.shape[0])))
+    cv2.imwrite('results/result' + str(i) + '.tif', result)
 
-        cv2.imwrite('edgemerge' + str(i) + '.tif', unedited_image)
+    print(str(i) + " is finished")
 
-        connect_close_edges('edgemerge' + str(i) + '.tif', 40,
-                            i)  # connect points with other points that are in 12*12 window in positive axis
-
-        # eliminate_small_objects('connected' + str(i) + '.tif', 1000,
-        #                         i)  # connecting close edges creates contours. Small contours means they
-        #
-        # # are not cells and should be removed
-        #
-        # fill_holes('big_only' + str(i) + '.tif', "1",
-        #            i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
-
-    elif 8 > i > 4:
-        back = unedited_image.copy()
-        # image = cv2.GaussianBlur(image,(3,3),0)
-        back = cv2.bilateralFilter(back, 9, 150, 150)
-        back = detect_background(back,i)
-        #
-        canny = unedited_image.copy()
-        canny = cv2.bilateralFilter(canny, 9, 150, 150)
-        canny = cv2.Canny(canny, 0, 6)
-        cv2.imwrite('canny' + str(i) + '.tif', canny)
-
-        for m in range(0, unedited_image.shape[0]):
-            for n in range(0, unedited_image.shape[1]):
-                if back[m][n] == 0 or canny[m][n] == 0:
-                    unedited_image[m][n] = 0
-                else:
-                    unedited_image[m][n] = 255
-
-        cv2.imwrite('edgemerge' + str(i) + '.tif', unedited_image)
-
-        connect_close_edges('edgemerge' + str(i) + '.tif', 40,
-                            i)  # connect points with other points that are in 12*12 window in positive axis
-
-        # eliminate_small_objects('connected' + str(i) + '.tif', 1000,
-        #                         i)  # connecting close edges creates contours. Small contours means they
-        #
-        # # are not cells and should be removed
-        #
-        # fill_holes('big_only' + str(i) + '.tif', "1",
-        #            i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
-
-    elif i <= 4:
-        back = unedited_image.copy()
-        # image = cv2.GaussianBlur(image,(3,3),0)
-        back = cv2.bilateralFilter(back, 9, 150, 150)
-        back = detect_background(back, i)
-
-        canny = unedited_image.copy()
-        canny = cv2.bilateralFilter(canny, 9, 150, 150)
-        canny = cv2.Canny(canny, 0, 10)
-        cv2.imwrite('canny' + str(i) + '.tif', canny)
-
-        for m in range(0, unedited_image.shape[0]):
-            for n in range(0, unedited_image.shape[1]):
-                if back[m][n] == 0 or canny[m][n] == 0:
-                    unedited_image[m][n] = 0
-                else:
-                    unedited_image[m][n] = 255
-
-        cv2.imwrite('edgemerge' + str(i) + '.tif', unedited_image)
-
-        connect_close_edges('edgemerge' + str(i) + '.tif', 20,
-                            i)  # connect points with other points that are in 12*12 window in positive axis
-
-        eliminate_small_objects('connected' + str(i) + '.tif', 1000,
-                                i)  # connecting close edges creates contours. Small contours means they
-
-        # are not cells and should be removed
-
-        fill_holes('big_only' + str(i) + '.tif', "1",
-                   i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
+    #
 
     # image = Image.open(original_image)  # original_image[15:17] + 'bbb.tif'
     # image = image.filter(ImageFilter.SMOOTH_MORE)
