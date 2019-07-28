@@ -4,6 +4,16 @@ __pycache__/
 *$py.class
 
 .idea/
+back/
+big_only/
+canny/
+connected/
+edgemerge/
+01_GT_rename/
+01rename/
+02rename/
+filled_1/
+01_GTrename/
 
 
 # C extensions

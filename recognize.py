@@ -24,99 +24,9 @@ def brightness_range_filter(path,lower,higher,image_index,file_init):
             else:
                 image[i, j] = 0
 
-    # images = []
-    # l = ""
-    # if 10 > image_index:
-    #     l = "0" + str(image_index)
-    # else:
-    #     l = str(image_index)
-    # original_image = cv2.imread(file_init+l+'.tif',cv2.IMREAD_GRAYSCALE)
-    # k = int(image_index / 10)
-    # for i in range(1,3):
-    #     l = ""
-    #     if 10 > image_index+i:
-    #         l = "0" + str(image_index+i)
-    #     else:
-    #         l = str(image_index+i)
-    #     print(l)
-    #     images.append(cv2.imread(file_init+l+'.tif',cv2.IMREAD_GRAYSCALE))
-    #
-    # for i in range(1, int((image.shape[0]-1)/3)):
-    #     for j in range(1, int((image.shape[1]-1)/3)):
-    #         later_sum_err = 0
-    #         current_sum_err = 0
-    #         for k in range(3):
-    #             for l in range(3):
-    #                 later_sum_err += abs(int(images[0][i*3+k][j*3+l]) - int(images[1][i*3+k][j*3+l]))
-    #                 current_sum_err += abs(int(images[0][i * 3 + k][j * 3 + l]) - int(original_image[i * 3 + k][j * 3 + l]))
-    #         if later_sum_err < 40 and current_sum_err < 40:
-    #             for k in range(3):
-    #                 for l in range(3):
-    #                     if image[i * 3 + k][j * 3 + l] == 255:
-    #                         image[i * 3 + k][j * 3 + l] = 90
-    # def pattern_match(path,window_size):
-    #     image = cv2.imread(path)
-    #     print(image.shape)
-    #     template = image[0:window_size, 0:window_size]
-    #     cv2.imwrite('template.tif', template)
-    #     template = cv2.imread('template.tif')
-    #
-    #     img = image.copy()
-    #
-    #     method = eval('cv2.TM_SQDIFF_NORMED')
-    #
-    #     # Apply template Matching
-    #     res = cv2.matchTemplate(img, template, method)
-    #     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-    #
-    #     # If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
-    #     if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
-    #         top_left = min_loc
-    #     else:
-    #         top_left = max_loc
-    #     bottom_right = (top_left[0], top_left[1])
-    #
-    #     cv2.rectangle(img, top_left, bottom_right, 255, 2)
-    #     plt.imshow(res, cmap='gray')
-    #
-    #     plt.gca().set_axis_off()
-    #     plt.subplots_adjust(top=1, bottom=0, right=1, left=0,
-    #                         hspace=0, wspace=0)
-    #     plt.margins(0, 0)
-    #     plt.gca().xaxis.set_major_locator(plt.NullLocator())
-    #     plt.gca().yaxis.set_major_locator(plt.NullLocator())
-    #
-    #     plt.savefig("aaa.tif", bbox_inches='tight', pad_inches=0)
-
-
-    # for i in range(1, image.shape[0] - 1):
-    #     for j in range(1, image.shape[1] - 1):
-    #         intensity_levels = []
-    #         for k in images:
-    #             intensity_levels.append(int(k[i,j]/5))
-    #         # mode_value = max(set(intensity_levels), key = intensity_levels.count)
-    #         # counter = 0
-    #         # for k in intensity_levels:
-    #         #     if -1 <= mode_value-k <= 1:
-    #         #         counter+=1
-    #         if max(intensity_levels) - min(intensity_levels) < 3 and -1 <= intensity_levels[0]-int(original_image[i,j]/5) <= 1 and image[i, j] == 255:
-    #             image[i, j] = 90
-    #         # min = 256
-    #         # max = -1
-    #         # sum = 0
-    #         # for k in images:
-    #         #     if int(k[i,j]) > max:
-    #         #         max = int(k[i,j])
-    #         #     if int(k[i,j]) < min:
-    #         #         min = int(k[i, j])
-    #         #     sum += int(k[i,j])
-    #         # if max - sum/9 < 5 and sum/9 - min < 5 and image[i,j] == 255:
-    #         #     image[i,j] = 90
-
     cv2.imwrite('bw_image.tif', image)
 
-def connect_close_edges(path,window_size,index):
-    image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+def connect_close_edges(image,window_size,index):
     y_range = []
     # if positive == 1:  # decision of iterate range depending on connection on positive or negative axis
     #     y_range = range(image.shape[1] - window_size)
@@ -236,28 +146,7 @@ def connect_close_edges(path,window_size,index):
             if image[i][j] == 90:
                 image[i][j] = 255
 
-
-
-    # for i in range(image.shape[0] - window_size):
-    #     for j in y_range:
-    #         if image[i][j] == 255:
-    #             if image[i + 1][j] is 255 or image[i - 1][j] is 255 or image[i + 1][j + positive] is 255 or image[i][
-    #                 j + positive] is 255 or image[i - 1][j + positive] is 255:
-    #                 continue
-    #             least_distance = 9999  # will going to use this operation once per point to avoid unnecessarily long execution time. Finding closest point that is not a neighbor
-    #             closest_white = []  # location of point to connect with, relative to original point
-    #             for k in range(window_size):
-    #                 for l in range(window_size):
-    #                     if image[i+k][j+positive*l] == 255:
-    #                         if least_distance > math.sqrt(pow(k,2)+pow(l,2)):
-    #                             least_distance = math.sqrt(pow(k,2)+pow(l,2))
-    #                             closest_white = [k,positive*l]
-    #             if least_distance != 9999:
-    #                 points = find_points_to_fill(i,j,closest_white)  # Bresenham's_Line_Algorithm to detect points to fill between two points
-    #                 for p in points:
-    #                     image[p[0],p[1]]=255
-
-    cv2.imwrite('results/connected'+str(index)+'.tif', image)
+    return image
 
 def find_points_to_fill(i,j,closest_white):  # Bresenham's_Line_Algorithm http://www.roguebasin.com/index.php?title=Bresenham%27s_Line_Algorithm
     x1 = i
@@ -305,8 +194,7 @@ def find_points_to_fill(i,j,closest_white):  # Bresenham's_Line_Algorithm http:/
         points.reverse()
     return points
 
-def eliminate_small_objects(path, min_size, index):
-    image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+def eliminate_small_objects(image, min_size):
     im = cv2.threshold(image, 175, 250, cv2.THRESH_BINARY)
     im = im[1]
 
@@ -327,10 +215,9 @@ def eliminate_small_objects(path, min_size, index):
             if a[i][j] == False:
                 image[i][j] = 0  # formatting boolean representation back to intensity representation
 
-    cv2.imwrite('results/big_only' + str(index) + '.tif', image)
+    return image
 
-def fill_holes(path, nth, index):
-    image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+def fill_holes(image):
     image[0] = [0]*len(image[0])
     im_floodfill = image.copy()
     h, w = image.shape[:2]
@@ -346,7 +233,7 @@ def fill_holes(path, nth, index):
     im_out = image | im_floodfill_inv
 
     # Display images.
-    cv2.imwrite('results/filled' + str(index) + '_'+nth+'.tif', im_out)
+    return im_out
 
 def eliminate_convex_contours(path, convex_path, persantage_threshold):
     # before comparing original contours with convex_hulled ones, contours must be matched. As a result of
@@ -431,69 +318,37 @@ def mse(imageA, imageB):
     err /= float(imageA.shape[0] * imageA.shape[1])
     return err
 
-def detect_stationary(current_image_path,compare_image_path1):
-    current_image = cv2.imread(current_image_path, cv2.IMREAD_GRAYSCALE)
+def detect_stationary(compare_image_path2,compare_image_path1,window_size):
+    compare_image_path2 = cv2.imread(compare_image_path2, cv2.IMREAD_GRAYSCALE)
     compare_image1 = cv2.imread(compare_image_path1, cv2.IMREAD_GRAYSCALE)
     # background_template = io.imread("background_template.tif", as_gray=True)
     points = []
 
-    for i in range(1, int((current_image.shape[0])/200)):
-        for j in range(1, int((current_image.shape[1])/200)):
-            template = current_image[i*200:i*200+200, j*50:j*200+200]
+    for i in range(1, int((compare_image_path2.shape[0])/window_size)):
+        for j in range(1, int((compare_image_path2.shape[1])/window_size)):
+            template = compare_image_path2[i*window_size:i*window_size+window_size, j*window_size:j*window_size+window_size]
             # mse_res = mse(template,background_template)
             # if mse_res>6000:
                 # io.imshow(template)
                 # plt.show()
             res = cv2.matchTemplate(compare_image1, template, cv2.TM_CCOEFF_NORMED)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-            if max_val > 0.1 and abs(max_loc[0]-j*200)<200 and abs(max_loc[1] -i*200)<200 :
-                print(max_loc)
-                print(str(j*20) + "," + str(i*20))
+            if max_val > 0.1 and abs(max_loc[0]-j*window_size)<window_size and abs(max_loc[1] -i*window_size)<window_size :
                 points.append([max_loc[0],max_loc[1],template])
     return points
 
-def test_stationary(current_image_path,points):
+def test_stationary(current_image_path,points,image_to_be_changed,window_size):
     current_image = cv2.imread(current_image_path, cv2.IMREAD_GRAYSCALE)
     for p in points:
         res = cv2.matchTemplate(current_image, p[2], cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-        if max_val > 0.1 and abs(max_loc[0] - p[0]) < 200 and abs(max_loc[1] - p[1]) < 200:
-            for i in range(200):
-                for j in range(200):
-                    current_image[p[1]+i,p[0]+j]=0
-    cv2.imwrite(current_image_path[22:24] + 'bbb.tif', current_image)
-    #
-    #         img = image.copy()
-    #
-    #         method = eval('cv2.TM_SQDIFF_NORMED')
-    #
-    #         # Apply template Matching
-    #         res = cv2.matchTemplate(img, template, method)
-    #         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-    #
-    #         # If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
-    #         if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
-    #             top_left = min_loc
-    #         else:
-    #             top_left = max_loc
-    #         bottom_right = (top_left[0], top_left[1])
-    #
-    #         cv2.rectangle(img, top_left, bottom_right, 255, 2)
-    #         plt.imshow(res, cmap='gray')
-    #
-    #         plt.gca().set_axis_off()
-    #         plt.subplots_adjust(top=1, bottom=0, right=1, left=0,
-    #                             hspace=0, wspace=0)
-    #         plt.margins(0, 0)
-    #         plt.gca().xaxis.set_major_locator(plt.NullLocator())
-    #         plt.gca().yaxis.set_major_locator(plt.NullLocator())
-    #
-    #         plt.savefig("aaa.tif", bbox_inches='tight', pad_inches=0)
+        if max_val > 0.1 and abs(max_loc[0] - p[0]) < window_size and abs(max_loc[1] - p[1]) < window_size:
+            for i in range(window_size):
+                for j in range(window_size):
+                    image_to_be_changed[p[1]+i,p[0]+j]=0
+    return image_to_be_changed
 
 def detect_background(current_image,index,threshold,window_size):
-    # background_template = cv2.imread("background_template.tif", cv2.IMREAD_GRAYSCALE)
-    # points = []
-    # print(background_template[0,0])
     for i in range(0, int((current_image.shape[0])/window_size)):
         for j in range(0, int((current_image.shape[1])/window_size)):
             if j == int((current_image.shape[1])/window_size)-1:
@@ -508,100 +363,123 @@ def detect_background(current_image,index,threshold,window_size):
             if max(maxes) - min(mins) < threshold:
                 for m in range(len(template)):
                     template[m] = [0] * len(template[m])
-            else:
-                for m in range(len(template)):
-                    template[m] = [255] * len(template[m])
+            # else:
+            #     for m in range(len(template)):
+            #         template[m] = [255] * len(template[m])
 
 
     template = current_image[i*window_size:]
     for m in range(len(template)):
         template[m] = [0] * len(template[m])
-
-    cv2.imwrite('results/back'+str(index)+'.tif', current_image)
     return current_image
 
 
+def do_segmentation(original_image_path,naming,i,do_eliminate_stationary,compare_img_path_1,compare_img_path_2):
+    unedited_image = cv2.imread(original_image_path, cv2.IMREAD_GRAYSCALE)
+    min_size = unedited_image.shape[0]
+    bilateral_param_1 = 9
+    bilateral_param_2 = 150
+    detect_background_window_size = int(unedited_image.shape[0]/100)
+    detect_background_min_diff = int(unedited_image.shape[0]/100)
+    if detect_background_min_diff > 5:
+        detect_background_min_diff = 5
+    canny_param_1 = 0
+    canny_param_2 = 7
+    max_edge_connect_dist = int(unedited_image.shape[0]/100)
+    detect_stationary_window_size = int(unedited_image.shape[0]/15)
+
+
+    background_eliminated_image = unedited_image.copy()
+    background_eliminated_image = cv2.bilateralFilter(background_eliminated_image, bilateral_param_1, bilateral_param_2, bilateral_param_2)
+    background_eliminated_image = detect_background(background_eliminated_image, i, detect_background_min_diff,detect_background_window_size)
+    cv2.imwrite('results/'+naming+'/back/'+str(i)+'.tif', background_eliminated_image)
+
+    if do_eliminate_stationary:
+        stationary_points = detect_stationary(compare_img_path_1,compare_img_path_2,detect_stationary_window_size)
+        background_eliminated_image = test_stationary(original_image_path, stationary_points, background_eliminated_image,detect_stationary_window_size)
+        for k in range(unedited_image.shape[0]):
+            for l in range(unedited_image.shape[1]):
+                if background_eliminated_image[k,l] != 0:
+                    background_eliminated_image[k,l] = 1
+
+    background_eliminated_image = cv2.resize(background_eliminated_image, (int(unedited_image.shape[1] / 2), int(unedited_image.shape[0] / 2)))
+        # cv2.imwrite('results/resize' + str(i) + '.tif', background_and_stationary_eliminated_image)
+
+
+    canny = unedited_image.copy()
+    canny = cv2.bilateralFilter(canny, 9, 150, 150)
+    canny = cv2.Canny(canny, canny_param_1, canny_param_2)
+    canny = cv2.resize(canny, (int(canny.shape[1] / 2), int(canny.shape[0] / 2)))
+    cv2.imwrite('results/'+naming+'/canny/' + str(i) + '.tif', canny)
+
+    edgemerge = cv2.resize(unedited_image.copy(), (int(unedited_image.shape[1] / 2), int(unedited_image.shape[0] / 2)))
+
+    for m in range(0, canny.shape[0]):
+        for n in range(0, canny.shape[1]):
+            if background_eliminated_image[m][n] == 0 or canny[m][n] == 0:
+                edgemerge[m][n] = 0
+            else:
+                edgemerge[m][n] = 255
+
+    cv2.imwrite('results/'+naming+'/edgemerge/' + str(i) + '.tif', edgemerge)
+
+    # connected = cv2.imread('results/' + naming + '/edgemerge/' + str(i) + '.tif', cv2.IMREAD_GRAYSCALE)
+    connected = connect_close_edges(edgemerge, max_edge_connect_dist,
+                        i)  # connect points with other points that are in 12*12 window in positive axis
+    cv2.imwrite('results/' + naming + '/connected/' + str(i) + '.tif', connected)
+
+    filled = fill_holes(connected)  # connecting edges may create contours with empty holes in them. this function fill these holes.
+    # # are not cells and should be removed
+    cv2.imwrite('results/' + naming + '/filled_1/' + str(i) + '.tif', filled)
+    #
+    # filled = cv2.imread('results/' + naming + '/filled_1/' + str(i) + '.tif', cv2.IMREAD_GRAYSCALE)
+    big_only = eliminate_small_objects(filled, min_size)  # connecting close edges creates contours. Small contours means they
+    # #
+    cv2.imwrite('results/' + naming + '/big_only/' + str(i) + '.tif', big_only)
+
+    final_result = cv2.resize(big_only, (int(unedited_image.shape[1]), int(unedited_image.shape[0])))
+    cv2.imwrite('results/' + naming + '/final_result/' + str(i) + '.tif', final_result)
+    # connect_close_edges('results/big_only' + str(i) + '.tif', max_edge_connect_dist,
+    #                     i)  # connect points with other points that are in 12*12 window in positive axis
+    # fill_holes('results/connected' + str(i) + '.tif', "result",
+    #            i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
+    # # are not cells and should be removed
+    #
+    # small_result = cv2.imread('results/filled' + str(i) + '_result.tif', cv2.IMREAD_GRAYSCALE)
+    # result = cv2.resize(small_result, (int(unedited_image.shape[1]), int(unedited_image.shape[0])))
+    # cv2.imwrite('results/result' + str(i) + '.tif', result)
+
+    print(str(i) + " is finished")
 
 ############################################
 ########## start of execution ##############
 # points = detect_stationary('glassmatrigel/01/frame28.tif','glassmatrigel/01/frame493.tif')
 
-for i in range(1,15):
-    file_init = 'glassmatrigel/01rename/frame'       # 'training/train0'
-    extra_0 = ""  # to adapt naming convention
-    # if i<10:
-    #     extra_0 = "0"
-    original_image = file_init+extra_0+str(i)+'.tif'
-    # test_stationary(original_image,points)
-    unedited_image = cv2.imread(original_image, cv2.IMREAD_GRAYSCALE)
 
-    min_size = 4000
-    back = unedited_image.copy()
-    # image = cv2.GaussianBlur(image,(3,3),0)
-    back = cv2.bilateralFilter(back, 9, 150, 150)
-    back = detect_background(back, i, 3,5)
+# for i in range(0,115):
+#     file_init = 'PhC/01/t'       # 'training/train0'
+#     extra_0 = ""  # to adapt naming convention
+#     if i<10:
+#         extra_0 = "00"
+#     elif i<100:
+#         extra_0 = "0"
+#     original_image_path = file_init+extra_0+str(i)+'.tif'
+#     do_segmentation(original_image_path,"PhC-01",i,True,"PhC/01/t017.tif","PhC/01/t114.tif")
 
-    back = cv2.resize(back, (int(unedited_image.shape[1] / 2), int(unedited_image.shape[0] / 2)))
-    cv2.imwrite('results/resize' + str(i) + '.tif', back)
+# for i in range(1,15):
+#     original_image_path = 'glassmatrigel/01rename/frame'+str(i)+'.tif'
+#     do_segmentation(original_image_path,"glassmatrigel-01",i,False,None,None)
 
-    # canny = unedited_image.copy()
-    # canny = cv2.bilateralFilter(canny, 9, 150, 150)
-    # canny = cv2.Canny(canny, 0, 10)
-    # cv2.imwrite('canny' + str(i) + '.tif', canny)
+# for i in range(0,115):
+#     file_init = 'PhC/02/t'       # 'training/train0'
+#     extra_0 = ""  # to adapt naming convention
+#     if i<10:
+#         extra_0 = "00"
+#     elif i<100:
+#         extra_0 = "0"
+#     original_image_path = file_init+extra_0+str(i)+'.tif'
+#     do_segmentation(original_image_path,"PhC-02",i,True,"PhC/02/t077.tif","PhC/02/t114.tif")
 
-    # for m in range(0, unedited_image.shape[0]):
-    #     for n in range(0, unedited_image.shape[1]):
-    #         if back[m][n] == 0 or canny[m][n] == 0:
-    #             unedited_image[m][n] = 0
-    #         else:
-    #             unedited_image[m][n] = 255
-
-    # cv2.imwrite('edgemerge' + str(i) + '.tif', unedited_image)
-
-    connect_close_edges('results/resize' + str(i) + '.tif', 30,
-                        i)  # connect points with other points that are in 12*12 window in positive axis
-
-
-    fill_holes('results/connected' + str(i) + '.tif', "1",
-               i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
-    # are not cells and should be removed
-
-    eliminate_small_objects('results/filled' + str(i) + '_1.tif', min_size,
-                            i)  # connecting close edges creates contours. Small contours means they
-    #
-    connect_close_edges('results/big_only' + str(i) + '.tif', 30,
-                        i)  # connect points with other points that are in 12*12 window in positive axis
-    fill_holes('results/connected' + str(i) + '.tif', "result",
-               i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
-    # are not cells and should be removed
-
-    small_result = cv2.imread('results/filled' + str(i) + '_result.tif', cv2.IMREAD_GRAYSCALE)
-    result = cv2.resize(small_result, (int(unedited_image.shape[1]), int(unedited_image.shape[0])))
-    cv2.imwrite('results/result' + str(i) + '.tif', result)
-
-    print(str(i) + " is finished")
-
-    #
-
-    # image = Image.open(original_image)  # original_image[15:17] + 'bbb.tif'
-    # image = image.filter(ImageFilter.SMOOTH_MORE)
-    # image = image.filter(ImageFilter.FIND_EDGES)  # find edges of image
-    # image.save('pil_edges.tif')
-    #
-    # brightness_range_filter('edgemerge' + str(i) + '.tif',6,255,i,file_init) # threshold edges in image and make it binary
-
-
-
-    # convex_hull("filled1.tif")  # convex hull algorithm wraps the contours so that all of them are convex objects.
-    # eliminate_convex_contours("filled1.tif","convex.tif",35)  # compares original contours with convex_filled ones and
-
-    # # separates contours that gained more than 35% area as result of convex_hull operation
-
-    # connect_close_edges("remove_convex.tif", 50)  # when relatively convex objects are separated, connecting edges
-
-    # # can be done with a larger window size without accidentally combining two cells
-
-    # fill_holes("connected.tif", "2")  # filling holes in new contours
-    # combine_two_images("filled1.tif","filled2.tif", "segresult_test0"+extra_0+str(i)+".tif")
-
-    # # merging previously separated relatively convex enough contours with newly reformed relatively concave contours
+for i in range(1,35):
+    original_image_path = 'glassmatrigel/02rename/Frame'+str(i)+'.tif'
+    do_segmentation(original_image_path,"glassmatrigel-02",i,False,None,None)
