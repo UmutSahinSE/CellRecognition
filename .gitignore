@@ -8,11 +8,14 @@ back/
 big_only/
 canny/
 connected/
+connected_2/
+convex_only/
 edgemerge/
 01_GT_rename/
 01rename/
 02rename/
 filled_1/
+filled_2/
 01_GTrename/
 
 

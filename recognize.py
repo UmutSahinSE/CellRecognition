@@ -363,9 +363,6 @@ def detect_background(current_image,index,threshold,window_size):
             if max(maxes) - min(mins) < threshold:
                 for m in range(len(template)):
                     template[m] = [0] * len(template[m])
-            # else:
-            #     for m in range(len(template)):
-            #         template[m] = [255] * len(template[m])
 
 
     template = current_image[i*window_size:]
@@ -387,7 +384,6 @@ def do_segmentation(original_image_path,naming,i,do_eliminate_stationary,compare
     canny_param_2 = 7
     max_edge_connect_dist = int(unedited_image.shape[0]/100)
     detect_stationary_window_size = int(unedited_image.shape[0]/15)
-
 
     background_eliminated_image = unedited_image.copy()
     background_eliminated_image = cv2.bilateralFilter(background_eliminated_image, bilateral_param_1, bilateral_param_2, bilateral_param_2)
@@ -423,7 +419,6 @@ def do_segmentation(original_image_path,naming,i,do_eliminate_stationary,compare
 
     cv2.imwrite('results/'+naming+'/edgemerge/' + str(i) + '.tif', edgemerge)
 
-    # connected = cv2.imread('results/' + naming + '/edgemerge/' + str(i) + '.tif', cv2.IMREAD_GRAYSCALE)
     connected = connect_close_edges(edgemerge, max_edge_connect_dist,
                         i)  # connect points with other points that are in 12*12 window in positive axis
     cv2.imwrite('results/' + naming + '/connected/' + str(i) + '.tif', connected)
@@ -432,53 +427,41 @@ def do_segmentation(original_image_path,naming,i,do_eliminate_stationary,compare
     # # are not cells and should be removed
     cv2.imwrite('results/' + naming + '/filled_1/' + str(i) + '.tif', filled)
     #
-    # filled = cv2.imread('results/' + naming + '/filled_1/' + str(i) + '.tif', cv2.IMREAD_GRAYSCALE)
     big_only = eliminate_small_objects(filled, min_size)  # connecting close edges creates contours. Small contours means they
     # #
     cv2.imwrite('results/' + naming + '/big_only/' + str(i) + '.tif', big_only)
 
     final_result = cv2.resize(big_only, (int(unedited_image.shape[1]), int(unedited_image.shape[0])))
     cv2.imwrite('results/' + naming + '/final_result/' + str(i) + '.tif', final_result)
-    # connect_close_edges('results/big_only' + str(i) + '.tif', max_edge_connect_dist,
-    #                     i)  # connect points with other points that are in 12*12 window in positive axis
-    # fill_holes('results/connected' + str(i) + '.tif', "result",
-    #            i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
-    # # are not cells and should be removed
-    #
-    # small_result = cv2.imread('results/filled' + str(i) + '_result.tif', cv2.IMREAD_GRAYSCALE)
-    # result = cv2.resize(small_result, (int(unedited_image.shape[1]), int(unedited_image.shape[0])))
-    # cv2.imwrite('results/result' + str(i) + '.tif', result)
 
     print(str(i) + " is finished")
 
 ############################################
 ########## start of execution ##############
-# points = detect_stationary('glassmatrigel/01/frame28.tif','glassmatrigel/01/frame493.tif')
 
+for i in range(0,115):
+    file_init = 'PhC/01/t'       # 'training/train0'
+    extra_0 = ""  # to adapt naming convention
+    if i<10:
+        extra_0 = "00"
+    elif i<100:
+        extra_0 = "0"
+    original_image_path = file_init+extra_0+str(i)+'.tif'
+    do_segmentation(original_image_path,"PhC-01",i,True,"PhC/01/t017.tif","PhC/01/t114.tif")
 
-# for i in range(0,115):
-#     file_init = 'PhC/01/t'       # 'training/train0'
-#     extra_0 = ""  # to adapt naming convention
-#     if i<10:
-#         extra_0 = "00"
-#     elif i<100:
-#         extra_0 = "0"
-#     original_image_path = file_init+extra_0+str(i)+'.tif'
-#     do_segmentation(original_image_path,"PhC-01",i,True,"PhC/01/t017.tif","PhC/01/t114.tif")
+for i in range(1,15):
+    original_image_path = 'glassmatrigel/01rename/frame'+str(i)+'.tif'
+    do_segmentation(original_image_path,"glassmatrigel-01",i,False,None,None)
 
-# for i in range(1,15):
-#     original_image_path = 'glassmatrigel/01rename/frame'+str(i)+'.tif'
-#     do_segmentation(original_image_path,"glassmatrigel-01",i,False,None,None)
-
-# for i in range(0,115):
-#     file_init = 'PhC/02/t'       # 'training/train0'
-#     extra_0 = ""  # to adapt naming convention
-#     if i<10:
-#         extra_0 = "00"
-#     elif i<100:
-#         extra_0 = "0"
-#     original_image_path = file_init+extra_0+str(i)+'.tif'
-#     do_segmentation(original_image_path,"PhC-02",i,True,"PhC/02/t077.tif","PhC/02/t114.tif")
+for i in range(0,115):
+    file_init = 'PhC/02/t'       # 'training/train0'
+    extra_0 = ""  # to adapt naming convention
+    if i<10:
+        extra_0 = "00"
+    elif i<100:
+        extra_0 = "0"
+    original_image_path = file_init+extra_0+str(i)+'.tif'
+    do_segmentation(original_image_path,"PhC-02",i,True,"PhC/02/t077.tif","PhC/02/t114.tif")
 
 for i in range(1,35):
     original_image_path = 'glassmatrigel/02rename/Frame'+str(i)+'.tif'
