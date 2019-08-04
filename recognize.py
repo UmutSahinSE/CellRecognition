@@ -9,11 +9,9 @@ from skimage import io
 from skimage.color import rgb2gray
 from skimage.feature import match_template
 
-def combine_two_images(path1,path2, new_file_name):
-    img1 = cv2.imread(path1,cv2.IMREAD_GRAYSCALE)
-    img2 = cv2.imread(path2,cv2.IMREAD_GRAYSCALE)
+def combine_two_images(img1,img2):
     img_bwo = cv2.bitwise_or(img1,img2)
-    cv2.imwrite(new_file_name, img_bwo)
+    return img_bwo
 
 def brightness_range_filter(path,lower,higher,image_index,file_init):
     image = cv2.imread(path,cv2.IMREAD_GRAYSCALE)
@@ -235,24 +233,20 @@ def fill_holes(image):
     # Display images.
     return im_out
 
-def eliminate_convex_contours(path, convex_path, persantage_threshold):
+def eliminate_convex_contours(image, persantage_threshold):
     # before comparing original contours with convex_hulled ones, contours must be matched. As a result of
     # convex_hull operation, two contours may merge into one. To match the contours correctly, Center of gravity of
     # each contour is found. Center of gravity shouldn't change much after convex_hull operation, so closest centers
     # of gravity should represent matching contours https://www.pyimagesearch.com/2016/02/01/opencv-center-of-contour/
-    image = cv2.imread(convex_path, cv2.IMREAD_GRAYSCALE)
-    image = cv2.resize(image, (696, 520))
-    convex_contours, convex_hier = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    image_2 = image.copy()
+    convex_contours, convex_hier = cv2.findContours(image_2, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     convex_contour_centers = []
     convex_areas = []
     for cnt in convex_contours:
         convex_areas.append(cv2.contourArea(cnt))
         M = cv2.moments(cnt)
         convex_contour_centers.append([int(M["m10"] / M["m00"]),int(M["m01"] / M["m00"])])
-    print(convex_contour_centers)
 
-    image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-    image = cv2.resize(image, (696, 520))
     contours, hier = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     mask = np.zeros(image.shape, np.uint8)
     contour_centers = []
@@ -261,7 +255,6 @@ def eliminate_convex_contours(path, convex_path, persantage_threshold):
         contour_areas.append(cv2.contourArea(cnt))
         M = cv2.moments(cnt)
         contour_centers.append([int(M["m10"] / M["m00"]),int(M["m01"] / M["m00"])])
-    print(contour_centers)
 
     which_convex_contour_will_be_compared_with = []
 
@@ -275,8 +268,6 @@ def eliminate_convex_contours(path, convex_path, persantage_threshold):
                 closest_convex_location = j
         which_convex_contour_will_be_compared_with.append(convex_contour_centers.index(closest_convex_location))
 
-    print(which_convex_contour_will_be_compared_with)
-
     for i in range(len(which_convex_contour_will_be_compared_with)):
         # after matching contours, areas of original and convex_filled contour are compared and if area didn't increase as much, that gives a result that contour was originally convex enough and doesn't need further operation
         error = convex_areas[which_convex_contour_will_be_compared_with[i]]-contour_areas[i]
@@ -287,10 +278,9 @@ def eliminate_convex_contours(path, convex_path, persantage_threshold):
         else:
             cv2.drawContours(image, [contours[i]], 0, (0, 0, 0), 1)
 
-    cv2.imwrite('remove_convex.tif', mask)
+    return mask
 
-def convex_hull(path):  # convex hull algorithm applied on each contour https://medium.com/@harshitsikchi/convex-hulls-explained-baab662c4e94
-    image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+def convex_hull(image):  # convex hull algorithm applied on each contour https://medium.com/@harshitsikchi/convex-hulls-explained-baab662c4e94
     contours, hier = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     uni_hull = []
     for cnt in contours:
@@ -310,8 +300,7 @@ def convex_hull(path):  # convex hull algorithm applied on each contour https://
 
     # Combine the two images to get the foreground.
     im_out = image | im_floodfill_inv
-
-    cv2.imwrite('convex.tif', im_out)
+    return im_out
 
 def mse(imageA, imageB):
     err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
@@ -386,7 +375,9 @@ def do_segmentation(original_image_path,naming,i,do_eliminate_stationary,compare
     canny_param_1 = 0
     canny_param_2 = 7
     max_edge_connect_dist = int(unedited_image.shape[0]/100)
+    max_edge_connect_dist_2 = int(unedited_image.shape[0]/20)
     detect_stationary_window_size = int(unedited_image.shape[0]/15)
+    convex_threshold = 30
 
 
     background_eliminated_image = unedited_image.copy()
@@ -431,23 +422,31 @@ def do_segmentation(original_image_path,naming,i,do_eliminate_stationary,compare
     filled = fill_holes(connected)  # connecting edges may create contours with empty holes in them. this function fill these holes.
     # # are not cells and should be removed
     cv2.imwrite('results/' + naming + '/filled_1/' + str(i) + '.tif', filled)
-    #
-    # filled = cv2.imread('results/' + naming + '/filled_1/' + str(i) + '.tif', cv2.IMREAD_GRAYSCALE)
+
     big_only = eliminate_small_objects(filled, min_size)  # connecting close edges creates contours. Small contours means they
     # #
+    big_only_2 = big_only.copy()
+
     cv2.imwrite('results/' + naming + '/big_only/' + str(i) + '.tif', big_only)
 
-    final_result = cv2.resize(big_only, (int(unedited_image.shape[1]), int(unedited_image.shape[0])))
-    cv2.imwrite('results/' + naming + '/final_result/' + str(i) + '.tif', final_result)
-    # connect_close_edges('results/big_only' + str(i) + '.tif', max_edge_connect_dist,
-    #                     i)  # connect points with other points that are in 12*12 window in positive axis
-    # fill_holes('results/connected' + str(i) + '.tif', "result",
-    #            i)  # connecting edges may create contours with empty holes in them. this function fill these holes.
+    all_convex = convex_hull(big_only)
+    cv2.imwrite('results/' + naming + '/all_convex/' + str(i) + '.tif', all_convex)
+
+    unfinished_only = eliminate_convex_contours(all_convex,convex_threshold)
+    cv2.imwrite('results/' + naming + '/convex_only/' + str(i) + '.tif', unfinished_only)
+
+    connected = connect_close_edges(unfinished_only, max_edge_connect_dist_2,
+                        i)  # connect points with other points that are in 12*12 window in positive axis
+    cv2.imwrite('results/' + naming + '/connected_2/' + str(i) + '.tif', connected)
+
+    filled = fill_holes(connected)  # connecting edges may create contours with empty holes in them. this function fill these holes.
     # # are not cells and should be removed
-    #
-    # small_result = cv2.imread('results/filled' + str(i) + '_result.tif', cv2.IMREAD_GRAYSCALE)
-    # result = cv2.resize(small_result, (int(unedited_image.shape[1]), int(unedited_image.shape[0])))
-    # cv2.imwrite('results/result' + str(i) + '.tif', result)
+    cv2.imwrite('results/' + naming + '/filled_2/' + str(i) + '.tif', filled)
+
+    merged = combine_two_images(big_only_2,filled)
+
+    final_result = cv2.resize(merged, (int(unedited_image.shape[1]), int(unedited_image.shape[0])))
+    cv2.imwrite('results/' + naming + '/final_result/' + str(i) + '.tif', final_result)
 
     print(str(i) + " is finished")
 
@@ -480,6 +479,6 @@ def do_segmentation(original_image_path,naming,i,do_eliminate_stationary,compare
 #     original_image_path = file_init+extra_0+str(i)+'.tif'
 #     do_segmentation(original_image_path,"PhC-02",i,True,"PhC/02/t077.tif","PhC/02/t114.tif")
 
-for i in range(1,35):
+for i in range(1,2):
     original_image_path = 'glassmatrigel/02rename/Frame'+str(i)+'.tif'
     do_segmentation(original_image_path,"glassmatrigel-02",i,False,None,None)
